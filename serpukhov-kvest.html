@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Серпухов: квест на два часа</title>
+<style>
+:root{
+  --ink:#0C1A1D;
+  --deep:#12292D;
+  --card:#F5EFE1;
+  --card-2:#EDE4D0;
+  --line:#D8CDB4;
+  --crimson:#A3202B;
+  --gold:#D6A43C;
+  --teal:#1B7A73;
+  --teal-dk:#0F5B57;
+  --text:#18272A;
+  --muted:#5E6D6E;
+  --ok:#20705A;
+  --no:#9A3B33;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ink);
+  color:var(--card);
+  font:400 17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding:0 0 env(safe-area-inset-bottom);
+}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px 48px}
+
+/* ---------- Шапка ---------- */
+header{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg,var(--ink) 72%,rgba(12,26,29,0));
+  padding:10px 16px 14px;
+}
+.hbar{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.tail{flex:0 0 auto}
+.hmeta{margin-left:auto;display:flex;gap:14px;align-items:baseline;font-size:14px;color:#9FB2B1}
+.hmeta b{font:600 17px/1 system-ui,sans-serif;color:var(--gold)}
+.hname{font:600 15px/1.2 Georgia,"Iowan Old Style",serif;color:#B9CBC9;letter-spacing:.01em}
+
+/* ---------- Общие блоки ---------- */
+h1{font:700 34px/1.1 Georgia,"Iowan Old Style","Palatino Linotype",serif;margin:18px 0 8px;color:var(--card)}
+h2{font:700 25px/1.15 Georgia,serif;margin:0 0 4px;color:var(--text)}
+h3{font:600 18px/1.3 Georgia,serif;margin:0 0 8px;color:var(--text)}
+p{margin:0 0 12px}
+.lede{color:#C2D2D0;font-size:17px}
+
+.card{
+  background:var(--card);color:var(--text);
+  border-radius:14px;padding:20px;margin:0 0 16px;
+  box-shadow:0 1px 0 rgba(0,0,0,.35);
+}
+.card.dim{background:var(--card-2)}
+.card p{margin:0 0 12px}
+.card p:last-child{margin-bottom:0}
+
+.kicker{
+  display:inline-block;font:600 13px/1 system-ui,sans-serif;
+  color:var(--crimson);letter-spacing:.03em;margin:0 0 10px;
+}
+.addr{
+  font-size:15px;color:var(--muted);margin:0 0 14px;
+  padding-left:14px;border-left:3px solid var(--gold);
+}
+.addr a{color:var(--teal-dk);font-weight:600}
+
+.fact{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+.fact:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.legend{background:#EFE6D0;border-radius:10px;padding:14px 16px;margin:14px 0 0;font-size:16px}
+.legend b{color:var(--crimson)}
+
+/* ---------- Задания ---------- */
+.task{background:var(--card);color:var(--text);border-radius:14px;padding:18px 20px;margin:0 0 14px;border-left:5px solid var(--teal)}
+.task.find{border-left-color:var(--gold)}
+.task.duel{border-left-color:var(--crimson)}
+.tlabel{font:600 13px/1 system-ui,sans-serif;color:var(--muted);margin:0 0 8px}
+.q{font:600 18px/1.35 system-ui,sans-serif;margin:0 0 14px}
+
+.opts{display:flex;flex-direction:column;gap:9px}
+button.opt{
+  display:block;width:100%;text-align:left;
+  font:400 16px/1.35 system-ui,sans-serif;color:var(--text);
+  background:#fff;border:1.5px solid var(--line);border-radius:10px;
+  padding:13px 15px;cursor:pointer;
+}
+button.opt:active{transform:scale(.99)}
+button.opt:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+button.opt.right{background:#E1F0E6;border-color:var(--ok);font-weight:600}
+button.opt.wrong{background:#F6E2E0;border-color:var(--no)}
+button.opt[disabled]{cursor:default;opacity:.92}
+
+.row{display:flex;gap:9px;flex-wrap:wrap}
+.row button{flex:1 1 140px}
+button.act{
+  font:600 16px/1.2 system-ui,sans-serif;
+  background:var(--teal);color:#fff;border:0;border-radius:10px;
+  padding:14px 16px;cursor:pointer;
+}
+button.act.ghost{background:transparent;color:var(--teal-dk);border:1.5px solid var(--teal)}
+button.act:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.hintbtn{
+  background:none;border:0;color:var(--teal-dk);font:600 15px/1 system-ui,sans-serif;
+  padding:10px 0 0;cursor:pointer;text-decoration:underline;
+}
+.hint{margin:10px 0 0;font-size:15px;color:var(--muted);font-style:italic}
+.verdict{margin:14px 0 0;padding:13px 15px;border-radius:10px;font-size:16px;background:#EFE6D0}
+.verdict.good{background:#E1F0E6}
+.verdict.bad{background:#F6E2E0}
+.verdict b{display:block;margin-bottom:4px}
+
+/* ---------- Навигация ---------- */
+.nav{display:flex;gap:10px;margin:22px 0 0}
+.nav button{flex:1}
+button.next{
+  font:600 18px/1.2 system-ui,sans-serif;
+  background:var(--gold);color:#2A1F06;border:0;border-radius:12px;
+  padding:17px;width:100%;cursor:pointer;
+}
+button.next[disabled]{background:#2A3C3E;color:#7E8E8F;cursor:default}
+button.back{
+  background:none;border:1.5px solid #33484A;color:#9FB2B1;
+  border-radius:12px;padding:15px;font:500 15px/1 system-ui,sans-serif;cursor:pointer;
+  flex:0 0 96px;
+}
+.small{font-size:14px;color:#8A9C9C;margin:16px 0 0;text-align:center}
+
+/* ---------- Финал ---------- */
+.score{font:700 68px/1 Georgia,serif;color:var(--gold);margin:0}
+.rank{font:700 27px/1.2 Georgia,serif;color:var(--card);margin:6px 0 18px}
+ul.recap{margin:0;padding-left:20px}
+ul.recap li{margin:0 0 9px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbar">
+    <svg class="tail" width="96" height="42" viewBox="0 0 96 42" aria-hidden="true"><g id="feathers"></g></svg>
+    <div class="hname" id="hname">Серпухов</div>
+    <div class="hmeta">
+      <span><b id="hscore">0</b> очк.</span>
+      <span><b id="htime">0:00</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" id="app"></div>
+
+<script>
+/* ====================== ХРАНЕНИЕ (безопасное) ====================== */
+var mem = {};
+function save(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } }
+function load(k){ try{ var v=localStorage.getItem(k); return v===null?(k in mem?mem[k]:null):v; }catch(e){ return (k in mem)?mem[k]:null; } }
+
+/* ====================== ДАННЫЕ КВЕСТА ====================== */
+var STATIONS = [
+{
+  name:"Площадь Владимира Храброго",
+  addr:"Центр города, перед зданием администрации (бывшая Советская площадь). В навигаторе: «площадь Владимира Храброго, Серпухов».",
+  map:"площадь Владимира Храброго Серпухов",
+  walk:"Отсюда начинаем. Если приехали на вокзал — доезжайте автобусом до центра, дальше весь маршрут пешком.",
+  facts:[
+    "Бронзовый князь тут стоит с 25 сентября 2009 года. Сама фигура — больше 4 метров, вместе с постаментом — около 9, а весит монумент примерно 5 тонн. Площадь раньше была Советской, но после установки памятника её переименовали в честь князя.",
+    "Владимир Андреевич Храбрый (1353–1410) — двоюродный брат Дмитрия Донского и хозяин Серпухова. На Куликовом поле он командовал засадным полком: полк сидел в дубраве и не вступал в бой, пока русские почти проигрывали. Удар из засады в нужный момент и решил исход всей битвы.",
+    "За это князь получил не одно прозвище, а два: Храбрый — и Донской. Да, Донских было двое. Оба титула выбиты на его надгробии в Архангельском соборе Московского Кремля."
+  ],
+  legend:"Почти вся жизнь князя связана с Серпуховом: при нём город из пограничной точки стал настоящей крепостью, и именно он в 1374 году заложил Высоцкий монастырь — до него мы сегодня дойдём.",
+  tasks:[
+    {type:"find",
+     q:"Обойдите памятник кругом и рассмотрите гранитный постамент — он не гладкий.",
+     hint:"Ищите рельефные фигуры воинов на боковых гранях.",
+     reveal:"На постаменте размещены барельефы со сценами Куликовской битвы — той самой, где князь вывел засадный полк."},
+    {type:"quiz",
+     q:"Чем именно Владимир Андреевич заслужил прозвище Храбрый?",
+     opts:["Командовал засадным полком на Куликовом поле","Первым въехал в Казань","В одиночку оборонял серпуховский кремль","Победил на рыцарском турнире"],
+     right:0,
+     hint:"Это связано с 1380 годом и с дубравой, из которой очень долго никто не выходил.",
+     why:"Засадный полк ждал в укрытии до последнего и ударил, когда ордынцы уже праздновали победу. Этот удар и перевернул битву."},
+    {type:"duel",
+     q:"Спор на двоих: не считая, каждая называет свою версию — сколько ступеней или уровней у основания памятника? Потом идёте и проверяете.",
+     reveal:"Правильного ответа в квесте нет — засчитывается тому, кто оказался ближе. Обе получают очки за азарт."}
+  ]
+},
+{
+  name:"Гостиный двор и Советская улица",
+  addr:"Площадь Ленина, здание Гостиного двора (начало XIX века). Дальше идём по Советской улице.",
+  map:"Гостиный двор Серпухов площадь Ленина",
+  walk:"От памятника — вниз по Советской улице, к торговой площади. 5–7 минут пешком.",
+  facts:[
+    "Серпухов веками был не княжеским, а купеческим городом. Торговая площадь с Гостиным двором посередине — его настоящий центр тяжести: сюда свозили товар, здесь его и продавали.",
+    "Главные деньги городу дал текстиль. В XIX веке Серпухов — это ситценабивные фабрики, полотно и сукно. След остался прямо в топонимике: в городе есть улица Ситценабивная, и мы по ней сегодня пройдём.",
+    "На стенах домов вдоль Советской улицы развешаны репродукции картин из городского историко-художественного музея. Способ приманить туриста нетипичный: музей буквально вынесли на улицу."
+  ],
+  legend:"Заодно приглядитесь к стенам: кроме репродукций, в центре попадаются большие яркие муралы — город любит расписывать сам себя.",
+  tasks:[
+    {type:"find",
+     q:"Найдите на фасадах вдоль Советской улицы хотя бы одну репродукцию картины. Выберите ту, что понравилась обеим, и сфотографируйте её.",
+     hint:"Смотрите выше уровня витрин — их обычно вешают на глухие участки стен.",
+     reveal:"Это копии работ из Серпуховского историко-художественного музея — его особняк мы увидим на следующей станции."},
+    {type:"quiz",
+     q:"Откуда в Серпухове взялась улица с названием Ситценабивная?",
+     opts:["На ней жили набивщики ковров","От ситценабивных фабрик — город жил текстилём","Так назвали в честь купца Ситцева","Там набивали чучела для музея"],
+     right:1,
+     hint:"Подумайте, на чём поднялись местные купцы.",
+     why:"Ситец — набивная хлопковая ткань. Серпухов был текстильным городом, и производство дало имя целой улице."}
+  ]
+},
+{
+  name:"Особняк Мараевых — историко-художественный музей",
+  addr:"улица Чехова, 87",
+  map:"Серпуховский историко-художественный музей улица Чехова 87",
+  walk:"От площади Ленина — минут 7–10 пешком. Внутрь заходить не обязательно, но если есть время и музей открыт, это лучший музей города.",
+  facts:[
+    "Особняк принадлежал семье фабрикантов Мараевых — одной из самых влиятельных промышленных династий в округе. Разбогатели они на том же, на чём и весь город: на ситценабивном производстве.",
+    "Анна Васильевна Мараева — фигура нетипичная: вдова, сама управлявшая фабриками, старообрядка и коллекционер. Собранные ею картины и реликвии в итоге и стали основой музейной экспозиции.",
+    "Результат парадоксальный: в небольшом подмосковном городе оказалась коллекция западноевропейской и русской живописи такого уровня, какого от райцентра никто не ждёт."
+  ],
+  legend:"Часть своего собрания Мараева держала не в городе, а в загородном доме в Данках, километрах в двенадцати отсюда — по сути, личное хранилище вдали от чужих глаз.",
+  tasks:[
+    {type:"duel",
+     q:"Внимательность на двоих: встаньте напротив фасада, отвернитесь и каждая называет своё число — сколько окон на втором этаже? Затем поворачиваетесь и считаете вместе.",
+     reveal:"Считается ничьей, если разошлись на одно окно. Кто назвал точно — забирает очко и право выбрать кафе."},
+    {type:"quiz",
+     q:"На чём семья Мараевых заработала состояние?",
+     opts:["На торговле хлебом","На ситценабивной фабрике","На речных перевозках по Оке","На добыче белого камня"],
+     right:1,
+     hint:"На том же, на чём стоял весь город.",
+     why:"Текстиль кормил Серпухов, а коллекция Мараевой, купленная на эти деньги, стала городским музеем."}
+  ]
+},
+{
+  name:"Три посадские церкви",
+  addr:"улица Володарского и Ситценабивная: Успенская (Володарского, 2), Троицкая (Ситценабивная, 3) и Ильинская церкви",
+  map:"Успенская церковь Серпухов улица Володарского 2",
+  walk:"Спускаемся в сторону реки Нары, к подножию городских валов. Три храма стоят почти в ряд — их реально поймать в один кадр.",
+  facts:[
+    "Это редкий случай: три церкви подряд, и каждая — из своей эпохи. Троицкая построена в 1670 году, Ильинская — в 1748-м, барочная, Успенская — в 1854-м, из красного кирпича с белой отделкой. По сути, три века русской архитектуры на одной улице.",
+    "Троицкая — самая древняя из трёх. И самая приметная деталь у неё не купола, а колокольня: она заметно кренится. Храм закрыли в 1961 году, через два десятилетия отреставрировали и передали городскому музею.",
+    "Ильинской повезло больше всех: это единственный храм Серпухова, который не закрывали ни разу — ни в тридцатые, ни в хрущёвскую антирелигиозную кампанию. Поэтому внутреннее убранство там сохранилось почти без потерь, в отличие от соседей."
+  ],
+  legend:"Лучший вид на всю троицу открывается сверху, со смотровой площадки Соборной горы — туда мы идём следующим пунктом. Так что кадр можно будет переснять.",
+  tasks:[
+    {type:"quiz",
+     q:"Какая из трёх церквей самая старая?",
+     opts:["Успенская","Ильинская","Троицкая"],
+     right:2,
+     hint:"1670, 1748, 1854 — выбирайте самую раннюю дату.",
+     why:"Троицкая, 1670 год — одна из древнейших в городе."},
+    {type:"find",
+     q:"Найдите церковь из красного кирпича с белой графичной отделкой. Это Успенская. Рассмотрите её крыльцо — оно резное и считается самым красивым в городе.",
+     hint:"Она стоит ближе всех к крепостному валу.",
+     reveal:"Успенская церковь, 1854 год, псевдорусский стиль — тот самый, в котором в XIX веке строили «под старину»."},
+    {type:"find",
+     q:"Отойдите подальше и посмотрите на колокольню Троицкой церкви по вертикали. Что с ней не так?",
+     hint:"Сравните её линию с линией стены соседнего дома или со столбом.",
+     reveal:"У колокольни заметный крен — местная Пизанская башня, только про неё почти никто не пишет."},
+    {type:"quiz",
+     q:"Почему в Ильинской церкви сохранилось старинное убранство, а в соседних — нет?",
+     opts:["Её прятали от властей за высоким забором","Её ни разу не закрывали в советские годы","Её убранство вывезли и потом вернули","Её построили уже после войны"],
+     right:1,
+     hint:"Дело не в спасении вещей, а в том, что спасать не пришлось.",
+     why:"Ильинская оставалась действующей и в 1930-е, и в 1958–1964 годах. Службы не прерывались — значит, и разорять было некому."}
+  ]
+},
+{
+  name:"Соборная гора: кремль, которого нет",
+  addr:"Соборная (Красная) гора, Троицкий собор. Левый берег Нары.",
+  map:"Соборная гора Серпухов Троицкий собор",
+  walk:"Поднимаемся на холм. Подъём короткий, но ощутимый — зато сверху весь город. Это главная точка маршрута, закладывайте здесь минут двадцать.",
+  facts:[
+    "Здесь стоял Серпуховский кремль. Сначала — дубовый, поставленный в 1374 году, потом — белокаменный, мощная пограничная крепость Московского княжества на пути с юга. Сейчас от него остались фундамент и два фрагмента стены длиной примерно 16 и 21 метр. И всё.",
+    "Вот как их не стало. В 1934 году кремль разобрали на камень для строительства московского метро. Метро было политической стройкой, спешили страшно, камень взяли из ближайшего доступного места — то есть из Серпухова. Крепость разобрали примерно за год и повезли по Оке и Москве-реке.",
+    "А дальше — самое обидное. В июне 1934 года вышло постановление о качестве работ на метрострое, к материалам стали придираться, и серпуховский камень попросту забраковали. Приёмку прекратили, местную контору Метростроя в ноябре закрыли, а бутовый камень из кладки кремля распродали и растащили по разным стройкам.",
+    "Крепость, простоявшую столетия, разобрали за год — и ни на что толком не пустили. В 1960 году Серпуховский кремль объявили памятником истории и культуры республиканского значения. Охранять было уже почти нечего."
+  ],
+  legend:"Ещё до сноса кремль успели внести в список памятников архитектуры под государственной охраной. Список не помог.",
+  tasks:[
+    {type:"quiz",
+     q:"Что в итоге стало с белым камнем серпуховского кремля?",
+     opts:["Им облицевали станции первой линии метро","Его забраковали и распродали по случайным стройкам","Он утонул при перевозке по Оке","Его вернули и сложили обратно"],
+     right:1,
+     hint:"Прочитайте третий абзац ещё раз. Финал у этой истории бесславный.",
+     why:"Камень признали негодным, приёмку остановили, и кладка кремля разошлась мелкими партиями неизвестно куда."},
+    {type:"find",
+     q:"Найдите на холме сохранившийся фрагмент крепостной стены и потрогайте его. Это буквально всё, что осталось от крепости.",
+     hint:"Ищите невысокий участок белокаменной кладки, а не церковную стену — фрагменты стоят отдельно.",
+     reveal:"Их два, восточной стены, примерно 16 и 21 метр. По ним и восстанавливают, как выглядел кремль, — вместе со старыми планами и рисунками."},
+    {type:"find",
+     q:"Встаньте на смотровую и поймайте в один кадр все три посадские церкви, у которых только что были.",
+     hint:"Смотрите вниз, в сторону посада под горой — они выстроены почти в линию.",
+     reveal:"Этот вид считается лучшим в городе: три храма, три эпохи, один кадр."},
+    {type:"quiz",
+     q:"Почему кремль поставили именно на этом холме?",
+     opts:["Здесь был единственный источник воды","Отсюда просматривались все дороги с юга","Так велел митрополит Алексий","Холм насыпали специально под крепость"],
+     right:1,
+     hint:"Серпухов был пограничным городом, и опасность приходила с одной стороны.",
+     why:"Крепость и Высоцкий монастырь строили одновременно на двух холмах — чтобы издали видеть все южные дороги, по которым на Москву могли двинуться ордынцы."}
+  ]
+},
+{
+  name:"Павлин: как птица попала на герб",
+  addr:"Граффити с павлином — улица Ворошилова, 151. Если далеко отклоняться не хочется, задание можно выполнить на любом городском изображении герба.",
+  map:"граффити павлин Серпухов улица Ворошилова 151",
+  walk:"Небольшой крюк по главной туристической улице. Если время поджимает — читайте прямо на ходу, а павлина ищите на вывесках и указателях, он в Серпухове повсюду.",
+  facts:[
+    "Символ Серпухова — павлин. На гербе он стоит в красном поле с распахнутыми крыльями, и утверждён этот герб 20 декабря 1781 года.",
+    "Легенда о происхождении такая: когда для составления гербов собирали сведения о городах, из Серпухова пришёл ответ, в котором была фраза про то, что в одном здешнем монастыре павлины родятся. Художнику этого хватило — птица ушла на герб и осталась там навсегда.",
+    "Самое смешное, что павлины в городе действительно есть до сих пор, живые, в монастыре. Мы к ним дойдём.",
+    "Летом 2018 года на главной туристической улице появилось гигантское граффити с павлином — город окончательно определился с тем, кто тут главный."
+  ],
+  legend:"То есть герб древнего пограничного города-крепости — не меч, не башня и не медведь, а декоративная птица, попавшая туда из одной строчки в отчёте.",
+  tasks:[
+    {type:"quiz",
+     q:"Как павлин оказался на гербе Серпухова?",
+     opts:["Князь привёз павлинов из похода","В отчёте о городе упомянули, что в монастыре родятся павлины","Павлин был на печати купеческой гильдии","Птицу выбрали горожане голосованием"],
+     right:1,
+     hint:"Всё решила одна фраза в бумаге.",
+     why:"По легенде, сведений о городе прислали немного, но фразы про монастырских павлинов оказалось достаточно. Герб утвердили в 1781 году."},
+    {type:"find",
+     q:"Найдите в городе павлина — граффити, герб на здании, вывеску, люк, что угодно. Сфотографируйтесь с ним вдвоём.",
+     hint:"Начните со зданий администрации, указателей и сувенирных витрин.",
+     reveal:"Засчитывается любой павлин. В Серпухове их неприлично много — это проверка на внимательность, а не на везение."},
+    {type:"duel",
+     q:"Спор на двоих: сколько «глазков» вы насчитаете на хвосте найденного павлина? Считаете по очереди, вслух.",
+     reveal:"Если числа сошлись — обе внимательные. Если разошлись вдвое — это нормально, так бывает у всех."}
+  ]
+},
+{
+  name:"Владычный монастырь и живые павлины",
+  addr:"Октябрьская улица, 40. Другой берег Нары.",
+  map:"Введенский Владычный монастырь Серпухов Октябрьская 40",
+  walk:"Переходим Нару. Идти минут 20–25 — это самый длинный перегон маршрута, зато с видами на реку.",
+  facts:[
+    "Монастырь основан в 1360 году митрополитом Алексием — это древнейшая обитель серпуховской земли, старше и кремля, и Высоцкого монастыря. По преданию, место было указано самому Алексию Богородицей.",
+    "Первым настоятелем стал преподобный Варлаам. С его именем связывают явление двух чудотворных икон, и главная из них — «Неупиваемая Чаша», к которой едут со всей страны: её почитают избавляющей от зависимостей.",
+    "С самой иконой история грустная: до 1919 года подлинник хранился здесь, а потом был утрачен. То, к чему сегодня прикладываются паломники и в этом монастыре, и в Высоцком, — списки, сделанные уже в XX веке.",
+    "И главное для нашего квеста: на территории живут настоящие павлины. Те самые, из-за которых птица попала на герб."
+  ],
+  legend:"Тридцать девять лет здесь прожила блаженная старица Евфросиния — в миру княгиня Евдокия Вяземская, оставившая светскую жизнь ради монастыря.",
+  tasks:[
+    {type:"find",
+     q:"Найдите павлинов и посчитайте, сколько их видно. Если повезёт застать распущенный хвост — считайте, что квест уже удался.",
+     hint:"Ищите вольер на территории, а не в храмах. Спросите у служителей, если не находите.",
+     reveal:"Живой символ города. Круг замкнулся: легенда с герба 1781 года до сих пор ходит по монастырскому двору."},
+    {type:"quiz",
+     q:"В каком веке основан Владычный монастырь?",
+     opts:["XII век","XIV век","XVI век","XVIII век"],
+     right:1,
+     hint:"1360 год.",
+     why:"1360 год — то есть XIV век, и это на четырнадцать лет раньше и кремля, и Высоцкого монастыря."},
+    {type:"quiz",
+     q:"Что случилось с подлинником иконы «Неупиваемая Чаша»?",
+     opts:["Он до сих пор здесь","Он утрачен после 1919 года, остались списки XX века","Его увезли в Москву","Он сгорел при пожаре XVIII века"],
+     right:1,
+     hint:"Рубеж — 1919 год.",
+     why:"Оригинал пропал, и в обоих серпуховских монастырях сегодня почитают списки, написанные в XX веке."}
+  ]
+},
+{
+  name:"Высоцкий монастырь — финальная точка",
+  addr:"Высокий холм над Нарой. В навигаторе: «Высоцкий монастырь, Серпухов».",
+  map:"Высоцкий монастырь Серпухов",
+  walk:"Возвращаемся через реку и поднимаемся на холм. Это финал маршрута — дальше только подсчёт очков.",
+  facts:[
+    "Монастырь основан в декабре 1374 года. Князь Владимир Храбрый — тот самый, с которого мы начали, — захотел поставить обитель и обратился за благословением к своему духовному отцу, Сергию Радонежскому.",
+    "И вот факт, который стоит запомнить: Сергий пришёл в Серпухов пешком. Зимой 1374 года, около двухсот километров от своей лавры, с учеником Афанасием — чтобы лично выбрать и освятить место. Афанасий здесь и остался, став первым настоятелем.",
+    "Название буквальное: место называлось Высокое, отсюда и Высоцкий. Монастырь строили одновременно с кремлём — две высокие точки, с которых просматривались все дороги с юга.",
+    "В 1380 году была Куликовская битва. Князь похоронил павших серпуховских воинов здесь, на освящённом Сергием месте, и над братской могилой поставил Зачатьевский собор — древнейший храм обители.",
+    "Высоцкий входит в число всего девяти монастырей, основанных самим Сергием Радонежским."
+  ],
+  legend:"Не всё сохранилось: в 1967 году при реставрации разобрали храм XIX века, решив, что исторической ценности он не представляет. Через несколько десятилетий такое решение выглядит уже совсем иначе.",
+  tasks:[
+    {type:"quiz",
+     q:"Как Сергий Радонежский добрался до Серпухова, чтобы освятить место под монастырь?",
+     opts:["Приехал на санях с княжеской охраной","Пришёл пешком, около 200 км, зимой","Приплыл по Оке","Не приезжал — благословил письмом"],
+     right:1,
+     hint:"Самый неудобный из вариантов и есть правильный.",
+     why:"Двести километров пешком зимой 1374 года, вместе с учеником Афанасием. После этого жаловаться на наш маршрут как-то неловко."},
+    {type:"quiz",
+     q:"Что находится под Зачатьевским собором монастыря?",
+     opts:["Княжеская казна","Братская могила воинов, павших на Куликовом поле","Древний колодец","Фундамент дубовой крепости"],
+     right:1,
+     hint:"1380 год.",
+     why:"Князь Владимир похоронил здесь павших серпуховичей и поставил над могилой собор."},
+    {type:"find",
+     q:"Поднимитесь к стенам и посмотрите вниз, на реку и город. Попробуйте разглядеть Соборную гору, где вы были час назад.",
+     hint:"Ищите холм с одиноким храмом на нём — это Троицкий собор на месте кремля.",
+     reveal:"Именно так это и было задумано в XIV веке: две высоты, которые видят друг друга и все дороги между ними."}
+  ]
+}
+];
+
+var BLITZ = [
+  {q:"Сколько фрагментов крепостной стены осталось на Соборной горе?",opts:["Ни одного","Два","Пять","Вся стена целая"],right:1,
+   why:"Два фрагмента восточной стены, примерно 16 и 21 метр."},
+  {q:"В каком году утверждён герб Серпухова с павлином?",opts:["1374","1560","1781","1918"],right:2,
+   why:"20 декабря 1781 года."},
+  {q:"Какая посадская церковь ни разу не закрывалась в советские годы?",opts:["Успенская","Троицкая","Ильинская"],right:2,
+   why:"Ильинская — поэтому её убранство сохранилось."},
+  {q:"Кто командовал засадным полком на Куликовом поле?",opts:["Дмитрий Донской","Владимир Храбрый","Сергий Радонежский","Афанасий Высоцкий"],right:1,
+   why:"Владимир Андреевич Храбрый, хозяин Серпухова."},
+  {q:"Какой монастырь города — самый старый?",opts:["Высоцкий, 1374","Владычный, 1360","Оба основаны одновременно"],right:1,
+   why:"Владычный, 1360 год — на четырнадцать лет раньше."}
+];
+
+/* ====================== СОСТОЯНИЕ ====================== */
+var S = { i:-1, score:0, done:[], started:null, answers:{} };
+(function restore(){
+  var raw = load("serp_quest");
+  if(raw){ try{ var o=JSON.parse(raw); if(o && typeof o.i==="number") S=o; }catch(e){} }
+})();
+function persist(){ save("serp_quest", JSON.stringify(S)); }
+
+var MAXPOINTS = (function(){
+  var t=0;
+  STATIONS.forEach(function(st){ t += st.tasks.length*10; });
+  t += BLITZ.length*10;
+  return t;
+})();
+
+/* ====================== ШАПКА ====================== */
+function drawTail(){
+  var g=document.getElementById("feathers"), n=STATIONS.length, html="";
+  for(var k=0;k<n;k++){
+    var a=(-58+k*(116/(n-1)))*Math.PI/180;
+    var x=48+Math.sin(a)*34, y=40-Math.cos(a)*33;
+    var on = S.done.indexOf(k)>-1;
+    html += '<line x1="48" y1="41" x2="'+x.toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="'+(on?"#1B7A73":"#2A3C3E")+'" stroke-width="1.6"/>';
+    html += '<ellipse cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="4.2" ry="5.4" fill="'+(on?"#1B7A73":"#20302F")+'" stroke="'+(on?"#D6A43C":"#2A3C3E")+'" stroke-width="1.4"/>';
+    if(on) html += '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="1.7" fill="#A3202B"/>';
+  }
+  g.innerHTML=html;
+}
+function tick(){
+  var el=document.getElementById("htime");
+  if(!S.started){ el.textContent="0:00"; return; }
+  var s=Math.floor((Date.now()-S.started)/1000);
+  var m=Math.floor(s/60);
+  el.textContent = Math.floor(m/60)+":"+("0"+(m%60)).slice(-2);
+}
+setInterval(tick,10000);
+
+function refreshHeader(){
+  document.getElementById("hscore").textContent=S.score;
+  document.getElementById("hname").textContent =
+    S.i<0 ? "Серпухов" : (S.i>=STATIONS.length ? "Финал" : "Точка "+(S.i+1)+" из "+STATIONS.length);
+  drawTail(); tick();
+}
+
+/* ====================== ОТРИСОВКА ====================== */
+var app=document.getElementById("app");
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function render(){
+  refreshHeader(); persist();
+  window.scrollTo(0,0);
+  if(S.i<0) return renderIntro();
+  if(S.i>=STATIONS.length) return renderFinal();
+  renderStation(STATIONS[S.i], S.i);
+}
+
+function renderIntro(){
+  app.innerHTML =
+  '<h1>Серпухов за два часа</h1>'+
+  '<p class="lede">Восемь точек, живые факты, задания на внимательность и пара споров на двоих. Всё пешком, всё в центре.</p>'+
+  '<div class="card">'+
+    '<h3>Как это устроено</h3>'+
+    '<p>На каждой точке вы сначала доходите по адресу, потом читаете короткий блок фактов, потом выполняете задания: часть — вопросы, часть — найти что-то глазами на месте.</p>'+
+    '<p>За верный ответ с первой попытки — 10 очков, с подсказкой — 5. Задания на месте засчитываются по честному слову: нашли — 10, не нашли — 3 за попытку.</p>'+
+    '<p>Прогресс сохраняется в браузере. Можно закрыть вкладку, выпить кофе и вернуться — хвост павлина в шапке покажет, сколько точек уже пройдено.</p>'+
+  '</div>'+
+  '<div class="card dim">'+
+    '<h3>Перед выходом</h3>'+
+    '<p>Маршрут рассчитан примерно на два часа с остановками. Удобная обувь обязательна: Соборная гора — это настоящий подъём.</p>'+
+    '<p>В монастыри лучше зайти с покрытой головой и в закрытой одежде. И проверьте часы работы — под вечер территория может закрыться.</p>'+
+  '</div>'+
+  '<button class="next" id="go">Начать маршрут</button>'+
+  (S.done.length? '<p class="small"><a href="#" id="reset" style="color:#8A9C9C">Сбросить прогресс и начать заново</a></p>':'');
+
+  document.getElementById("go").onclick=function(){
+    if(!S.started) S.started=Date.now();
+    S.i=0; render();
+  };
+  var r=document.getElementById("reset");
+  if(r) r.onclick=function(e){ e.preventDefault(); S={i:-1,score:0,done:[],started:null,answers:{}}; render(); };
+}
+
+function renderStation(st, idx){
+  var html =
+  '<h1>'+esc(st.name)+'</h1>'+
+  '<div class="card">'+
+    '<div class="kicker">Как дойти</div>'+
+    '<div class="addr">'+esc(st.addr)+'<br><a href="https://yandex.ru/maps/?text='+encodeURIComponent(st.map)+'" target="_blank" rel="noopener">Открыть в картах</a></div>'+
+    '<p>'+esc(st.walk)+'</p>'+
+  '</div>'+
+  '<div class="card">'+
+    '<div class="kicker">Читаем на месте</div>';
+  st.facts.forEach(function(f){ html += '<div class="fact"><p>'+esc(f)+'</p></div>'; });
+  if(st.legend) html += '<div class="legend"><b>Кстати.</b> '+esc(st.legend)+'</div>';
+  html += '</div>';
+
+  st.tasks.forEach(function(t,ti){
+    var key = idx+"_"+ti;
+    var cls = t.type==="quiz"?"task":(t.type==="find"?"task find":"task duel");
+    var lab = t.type==="quiz"?"Вопрос":(t.type==="find"?"Найдите на месте":"Задание на двоих");
+    html += '<div class="'+cls+'" id="t'+key+'">'+
+              '<div class="tlabel">'+lab+'</div>'+
+              '<div class="q">'+esc(t.q)+'</div>'+
+              '<div class="body" id="b'+key+'"></div>'+
+            '</div>';
+  });
+
+  html += '<div class="nav">'+
+            (idx>0?'<button class="back" id="back">Назад</button>':'')+
+            '<button class="next" id="next" disabled>Точка пройдена</button>'+
+          '</div>'+
+          '<p class="small">Ответьте на все задания, чтобы идти дальше</p>';
+
+  app.innerHTML=html;
+  st.tasks.forEach(function(t,ti){ mountTask(t, idx, ti); });
+  var b=document.getElementById("back");
+  if(b) b.onclick=function(){ S.i--; render(); };
+  document.getElementById("next").onclick=function(){
+    if(S.done.indexOf(idx)<0) S.done.push(idx);
+    S.i++; render();
+  };
+  checkStationDone(idx);
+}
+
+function mountTask(t, idx, ti){
+  var key=idx+"_"+ti, box=document.getElementById("b"+key), prev=S.answers[key];
+
+  if(t.type==="quiz"){
+    var h='<div class="opts">';
+    t.opts.forEach(function(o,oi){ h+='<button class="opt" data-o="'+oi+'">'+esc(o)+'</button>'; });
+    h+='</div><button class="hintbtn" id="h'+key+'">Нужна подсказка</button><div id="v'+key+'"></div>';
+    box.innerHTML=h;
+    var hintUsed=prev?prev.hint:false;
+
+    document.getElementById("h"+key).onclick=function(){
+      hintUsed=true;
+      this.outerHTML='<p class="hint">'+esc(t.hint)+'</p>';
+    };
+    box.querySelectorAll("button.opt").forEach(function(btn){
+      btn.onclick=function(){
+        var oi=+btn.dataset.o, ok=(oi===t.right);
+        lockOpts(box, t.right, oi);
+        var pts = ok ? (hintUsed?5:10) : 0;
+        if(!prev){ S.score+=pts; S.answers[key]={ok:ok,hint:hintUsed,pts:pts}; }
+        document.getElementById("v"+key).innerHTML=
+          '<div class="verdict '+(ok?"good":"bad")+'"><b>'+(ok?"Верно. +"+pts+" очк.":"Мимо. Правильный ответ подсвечен.")+'</b>'+esc(t.why)+'</div>';
+        refreshHeader(); persist(); checkStationDone(idx);
+      };
+    });
+    if(prev){
+      lockOpts(box, t.right, prev.pick!==undefined?prev.pick:(prev.ok?t.right:-1));
+      var hb=document.getElementById("h"+key); if(hb) hb.remove();
+      document.getElementById("v"+key).innerHTML=
+        '<div class="verdict '+(prev.ok?"good":"bad")+'"><b>'+(prev.ok?"Верно. +"+prev.pts+" очк.":"Было отвечено неверно.")+'</b>'+esc(t.why)+'</div>';
+    }
+  }
+
+  if(t.type==="find"){
+    box.innerHTML =
+      '<div class="row">'+
+        '<button class="act" data-f="1">Нашли</button>'+
+        '<button class="act ghost" data-f="0">Не нашли</button>'+
+      '</div>'+
+      (t.hint?'<button class="hintbtn" id="h'+key+'">Нужна подсказка</button>':'')+
+      '<div id="v'+key+'"></div>';
+    var hb2=document.getElementById("h"+key);
+    if(hb2) hb2.onclick=function(){ this.outerHTML='<p class="hint">'+esc(t.hint)+'</p>'; };
+    box.querySelectorAll("button.act").forEach(function(btn){
+      btn.onclick=function(){
+        var found = btn.dataset.f==="1", pts = found?10:3;
+        box.querySelectorAll("button.act").forEach(function(b){ b.disabled=true; b.style.opacity=.55; });
+        btn.style.opacity=1;
+        if(!S.answers[key]){ S.score+=pts; S.answers[key]={ok:found,pts:pts}; }
+        document.getElementById("v"+key).innerHTML=
+          '<div class="verdict '+(found?"good":"")+'"><b>'+(found?"Засчитано. +10 очк.":"Ничего страшного. +3 очк.")+'</b>'+esc(t.reveal)+'</div>';
+        refreshHeader(); persist(); checkStationDone(idx);
+      };
+    });
+    if(prev){
+      box.querySelectorAll("button.act").forEach(function(b){ b.disabled=true; b.style.opacity=.55; });
+      document.getElementById("v"+key).innerHTML=
+        '<div class="verdict '+(prev.ok?"good":"")+'"><b>'+(prev.ok?"Засчитано. +10 очк.":"Отмечено. +3 очк.")+'</b>'+esc(t.reveal)+'</div>';
+    }
+  }
+
+  if(t.type==="duel"){
+    box.innerHTML='<div class="row"><button class="act" id="d'+key+'">Мы поспорили и проверили</button></div><div id="v'+key+'"></div>';
+    document.getElementById("d"+key).onclick=function(){
+      this.disabled=true; this.style.opacity=.55;
+      if(!S.answers[key]){ S.score+=10; S.answers[key]={ok:true,pts:10}; }
+      document.getElementById("v"+key).innerHTML='<div class="verdict good"><b>+10 очк. на двоих.</b>'+esc(t.reveal)+'</div>';
+      refreshHeader(); persist(); checkStationDone(idx);
+    };
+    if(prev){
+      var db=document.getElementById("d"+key); db.disabled=true; db.style.opacity=.55;
+      document.getElementById("v"+key).innerHTML='<div class="verdict good"><b>+10 очк. на двоих.</b>'+esc(t.reveal)+'</div>';
+    }
+  }
+}
+
+function lockOpts(box, right, picked){
+  box.querySelectorAll("button.opt").forEach(function(b){
+    var oi=+b.dataset.o; b.disabled=true;
+    if(oi===right) b.classList.add("right");
+    else if(oi===picked) b.classList.add("wrong");
+  });
+}
+
+function checkStationDone(idx){
+  var st=STATIONS[idx], all=true;
+  for(var ti=0;ti<st.tasks.length;ti++){ if(!S.answers[idx+"_"+ti]) all=false; }
+  var btn=document.getElementById("next");
+  if(btn){
+    btn.disabled=!all;
+    btn.textContent = all ? (idx===STATIONS.length-1?"К финалу":"Дальше, к точке "+(idx+2)) : "Точка пройдена";
+  }
+}
+
+/* ====================== ФИНАЛ ====================== */
+function renderFinal(){
+  var blitzDone = BLITZ.every(function(_,bi){ return S.answers["B"+bi]; });
+  var html='<h1>Финальный блиц</h1>'+
+    '<p class="lede">Пять вопросов по тому, что вы сегодня видели и читали. Подсказок нет.</p>';
+  BLITZ.forEach(function(b,bi){
+    html+='<div class="task"><div class="tlabel">Вопрос '+(bi+1)+'</div><div class="q">'+esc(b.q)+'</div><div class="body" id="bB'+bi+'"></div></div>';
+  });
+  html+='<div id="result"></div>';
+  app.innerHTML=html;
+
+  BLITZ.forEach(function(b,bi){
+    var key="B"+bi, box=document.getElementById("bB"+bi), prev=S.answers[key];
+    var h='<div class="opts">';
+    b.opts.forEach(function(o,oi){ h+='<button class="opt" data-o="'+oi+'">'+esc(o)+'</button>'; });
+    h+='</div><div id="v'+key+'"></div>';
+    box.innerHTML=h;
+    box.querySelectorAll("button.opt").forEach(function(btn){
+      btn.onclick=function(){
+        var oi=+btn.dataset.o, ok=(oi===b.right);
+        lockOpts(box,b.right,oi);
+        if(!S.answers[key]){ if(ok) S.score+=10; S.answers[key]={ok:ok,pts:ok?10:0}; }
+        document.getElementById("v"+key).innerHTML='<div class="verdict '+(ok?"good":"bad")+'"><b>'+(ok?"Верно. +10 очк.":"Не то.")+'</b>'+esc(b.why)+'</div>';
+        refreshHeader(); persist(); maybeResult();
+      };
+    });
+    if(prev){
+      lockOpts(box,b.right,prev.ok?b.right:-1);
+      document.getElementById("v"+key).innerHTML='<div class="verdict '+(prev.ok?"good":"bad")+'"><b>'+(prev.ok?"Верно.":"Было неверно.")+'</b>'+esc(b.why)+'</div>';
+    }
+  });
+  if(blitzDone) maybeResult();
+}
+
+function maybeResult(){
+  if(!BLITZ.every(function(_,bi){ return S.answers["B"+bi]; })) return;
+  var pct=Math.round(S.score/MAXPOINTS*100);
+  var rank = pct<45?"Гость Серпухова":pct<70?"Знаток посада":pct<90?"Хранитель Соборной горы":"Павлин на гербе";
+  var mins = S.started?Math.round((Date.now()-S.started)/60000):null;
+  var html='<div class="card" style="text-align:center">'+
+    '<p class="kicker">Ваш результат</p>'+
+    '<p class="score" style="color:#A3202B">'+S.score+'</p>'+
+    '<p style="color:#5E6D6E;margin:0 0 10px">из '+MAXPOINTS+' возможных · '+pct+'%</p>'+
+    '<p style="font:700 26px/1.2 Georgia,serif;margin:0">'+rank+'</p>'+
+    (mins!==null?'<p style="color:#5E6D6E;margin:12px 0 0">Маршрут занял '+mins+' мин.</p>':'')+
+  '</div>'+
+  '<div class="card">'+
+    '<h3>Что унесли с собой</h3>'+
+    '<ul class="recap">'+
+      '<li>Кремль, стоявший столетия, разобрали за год ради метро — и камень забраковали. Осталось два фрагмента стены.</li>'+
+      '<li>На гербе города — павлин, попавший туда из одной фразы в отчёте. И павлины в монастыре действительно живут.</li>'+
+      '<li>Сергий Радонежский прошёл около 200 километров пешком зимой, чтобы выбрать место для Высоцкого монастыря.</li>'+
+      '<li>Три посадские церкви — это три века архитектуры в одном кадре, и только одна из них не закрывалась никогда.</li>'+
+      '<li>Князь с площади, откуда вы начали, и монастырь, где закончили, — один и тот же человек и один и тот же 1374 год.</li>'+
+    '</ul>'+
+  '</div>'+
+  '<button class="next" id="again">Пройти заново</button>';
+  document.getElementById("result").innerHTML=html;
+  document.getElementById("again").onclick=function(){
+    S={i:-1,score:0,done:[],started:null,answers:{}}; render();
+  };
+  window.scrollTo(0,document.body.scrollHeight);
+}
+
+render();
+</script>
+</body>
+</html>
